@@ -5,6 +5,7 @@
 
 # Ignore local environments
 .env
+.envrc
 
 # Ignore rubygems
 /vendor/ruby/
@@ -14,3 +15,7 @@ latest*.dump
 package-lock.json
 
 /public
+
+.claude
+lorikeet-docs-api-reference.md
+lorikeet-docs-trusted-mode.md

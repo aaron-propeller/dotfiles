@@ -40,3 +40,16 @@ export VISUAL=$(which nvim)
 
 # Match case insensitive, the empty string starts matching on if no case sensitive matches
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+eval "$(direnv hook zsh)"
+
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+export PATH="/Users/aaron-propeller/.local/bin:$PATH"
+
+[ -f "/Users/aaron-propeller/.ghcup/env" ] && source "/Users/aaron-propeller/.ghcup/env" # ghcup-env
+CRYSTAL_OPTS="--link-flags=-Wl,-ld_classic"
