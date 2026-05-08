@@ -1,0 +1,10 @@
+#!/bin/zsh
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+export NVM_DIR="$HOME/.nvm"
+. "$NVM_DIR/nvm.sh"
+
+TOKEN=$(op read 'op://General Propeller Shared/xwneoyzl3dju77445bvu6mftc4/password')
+npm config set //registry.npmjs.org/:_authToken "$TOKEN"
