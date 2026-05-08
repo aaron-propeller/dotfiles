@@ -1,0 +1,32 @@
+{
+  "shellPath": "/bin/zsh",
+  "shellCommandPrefix": "source ~/.zshrc",
+  "lastChangelogVersion": "0.73.0",
+  "enableSkillCommands": false,
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.5",
+  "defaultThinkingLevel": "medium",
+  "packages": [
+    "/Users/aaron/src/pi-packages/packages/pippin",
+    "/Users/aaron/src/pi-packages/packages/pi-cockpit",
+    "/Users/aaron/src/pi-packages/packages/themes",
+    "/Users/aaron/src/pi-packages/packages/pi-plan",
+    "/Users/aaron/src/pi-packages/packages/pi-mode-plan",
+    "npm:pi-mcp-adapter"
+  ],
+  "theme": "nordic",
+  "pippin": {
+    "specs": [
+      {
+        "path": "/Users/aaron/src/pi-packages/packages/pi-cockpit"
+      },
+      {
+        "path": "/Users/aaron/src/pi-packages/packages/themes"
+      },
+      {
+        "path": "/Users/aaron/src/pi-packages/~/src/pi-packages/packages/pippin"
+      }
+    ]
+  },
+  "hideThinkingBlock": true
+}

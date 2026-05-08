@@ -42,3 +42,4 @@ alias vi='nvim'
 
 # chezmoi
 alias chedit='chezmoi edit --apply'
+alias cm='cd $(chezmoi source-path)'

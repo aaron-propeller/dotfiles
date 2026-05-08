@@ -8,6 +8,7 @@ CACHE_DIR="$HOME/.cache"
 [ -d $CACHE_DIR ] || mkdir $CACHE_DIR
 
 . "$ZSH_DIR/lib/git.zsh"
+. "$ZSH_DIR/lib/worktree.zsh"
 
 # Prompt
 # Only have 1 of these active at a time

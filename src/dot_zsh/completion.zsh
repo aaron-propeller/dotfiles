@@ -5,6 +5,9 @@ export ZSH_COMPDUMP="$CACHEDIR/.zcompdump-$HOST"
 autoload -Uz compinit
 compinit -u
 
+# Register completions
+compdef _wt wt
+
 # Use menu select style
 zstyle ':completion:*:*:*:*:*' menu select
 # Autocomplete . and ..

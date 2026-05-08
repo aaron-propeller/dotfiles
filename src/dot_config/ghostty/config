@@ -1,0 +1,27 @@
+# Ghostty config
+# Loads the Base64Pastel theme split from the uploaded nordic.json profile.
+
+theme = Base64Pastel
+# theme = Nordic
+
+# Compatible non-theme settings preserved from the iTerm2 profile where Ghostty has equivalents.
+font-family = "Monaco Nerd Font"
+font-size = 12
+window-width = 80
+window-height = 25
+term = xterm-256color
+background-opacity = 0.916663
+background-blur = false
+mouse-reporting = false
+
+cursor-style = block
+cursor-style-blink = false
+cursor-opacity = 1
+shell-integration-features = no-cursor
+
+# iTerm2 had Unlimited Scrollback = true, but Ghostty does not currently support unlimited scrollback.
+# Set a large byte limit below if you want something close:
+scrollback-limit = 100000000
+
+keybind = cmd+left=previous_tab
+keybind = cmd+right=next_tab

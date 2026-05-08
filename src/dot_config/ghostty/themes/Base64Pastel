@@ -1,0 +1,30 @@
+# Base64Pastel for Ghostty
+# Converted from the uploaded nordic.json iTerm2 profile
+
+palette = 0=#151515
+palette = 1=#FDB1BE
+palette = 2=#B1C89D
+palette = 3=#EFD49F
+palette = 4=#88C0D0
+palette = 5=#BE9DB8
+palette = 6=#9FC6C5
+palette = 7=#D0D0D0
+palette = 8=#505050
+palette = 9=#FB9FB1
+palette = 10=#ACC267
+palette = 11=#DDB26F
+palette = 12=#6FC2EF
+palette = 13=#E1A3EE
+palette = 14=#12CFC0
+palette = 15=#F5F5F5
+
+background = #222630
+foreground = #D0D0D0
+
+cursor-color = #D0D0D0
+cursor-text = #151515
+
+selection-background = #303030
+selection-foreground = #D0D0D0
+
+bold-color = #D0D0D0

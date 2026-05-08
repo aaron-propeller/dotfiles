@@ -16,6 +16,7 @@ package-lock.json
 
 /public
 
+.pi
 .claude
 lorikeet-docs-api-reference.md
 lorikeet-docs-trusted-mode.md
