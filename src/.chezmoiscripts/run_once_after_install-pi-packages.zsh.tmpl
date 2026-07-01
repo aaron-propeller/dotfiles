@@ -1,0 +1,47 @@
+#! /bin/zsh
+
+# Clones aaron-propeller/pi-packages into ~/src and installs npm deps for each
+# sub-package that declares them. pi itself picks the packages up via the paths
+# already declared in ~/.pi/agent/settings.json (managed by chezmoi under
+# src/dot_pi/agent/settings.json), so no `pi install` step is needed here.
+#
+# See: https://github.com/aaron-propeller/pi-packages
+#
+# Prerequisites (handled by run_once_after_install-dependencies.zsh.tmpl):
+#   - git, nvm + node, npm
+# Prerequisites (handled by you, manually, per README.md):
+#   - An SSH key uploaded to GitHub
+
+set -e
+
+REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
+REPO_DIR="{{ .chezmoi.homeDir }}/src/pi-packages"
+
+echo "Setting up pi-packages..."
+
+# Make nvm-managed node available.
+export NVM_DIR="{{ .chezmoi.homeDir }}/.nvm"
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$NVM_DIR/nvm.sh"
+fi
+
+mkdir -p "$(dirname "$REPO_DIR")"
+
+if [[ -d "$REPO_DIR/.git" ]]; then
+  echo "  pi-packages repo already exists, pulling latest..."
+  git -C "$REPO_DIR" pull --ff-only
+else
+  echo "  cloning pi-packages into $REPO_DIR..."
+  git clone "$REPO_URL" "$REPO_DIR"
+fi
+
+# Install npm deps for each sub-package that has a package.json. Packages with
+# no dependencies are a fast no-op; this keeps the script future-proof as new
+# packages are added.
+for pkg in "$REPO_DIR"/packages/*/; do
+  if [[ -f "$pkg/package.json" ]]; then
+    echo "  npm install: $(basename "$pkg")"
+    (cd "$pkg" && npm install --silent)
+  fi
+done
