@@ -21,12 +21,19 @@ brew install direnv
 brew install tree
 brew install the_silver_searcher
 brew install saulpw/vd/visidata
+brew install gh
+brew install git-crypt
+brew install pnpm
+brew install pyenv
+brew install terminal-notifier
 {{- if eq .user_data.machine_type "personal" }}
 # Personal clis
 {{- end }}
 {{- if eq .user_data.machine_type "work" }}
 # Work clis
 brew install awscli
+brew install tfenv
+brew install derailed/k9s/k9s
 {{- end }}
 
 echo "Installing casks..."
@@ -36,7 +43,6 @@ brew install --cask slack
 brew install --cask firefox
 brew install --cask spotify
 brew install --cask ghostty
-brew install --cask cmux
 brew install --cask docker
 brew install --cask finicky
 {{- if eq .user_data.machine_type "personal" }}
@@ -51,6 +57,13 @@ brew install --cask openemu
 # Work casks
 brew install --cask visual-studio-code
 brew install --cask google-chrome
+brew install --cask 1password-cli
+brew install --cask freelens
+brew install --cask cmux
+brew install --cask cmux-nightly
+brew install --cask motion
+brew install --cask notion-calendar
+brew install --cask tailscale
 {{- end }}
 {{- end }}
 
@@ -84,5 +97,8 @@ echo "Installing shared node packages..."
 # Install some packages globally that are needed by nvim plugins
 npm install -g typescript-language-server
 npm install -g jjson
-npm install -g @mariozechner/pi-coding-agent
+pnpm add -g --ignore-scripts @earendil-works/pi-coding-agent
+{{- if eq .user_data.machine_type "work" }}
+pnpm add -g @propelleraero/prp
+{{- end }}
 
