@@ -43,3 +43,6 @@ alias vi='nvim'
 # chezmoi
 alias chedit='chezmoi edit --apply'
 alias cm='cd $(chezmoi source-path)'
+
+# pi
+alias pipi='AWS_PROFILE=devops-account pi --provider amazon-bedrock --model global.anthropic.claude-opus-4-7'

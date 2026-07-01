@@ -54,3 +54,4 @@ export PATH="/Users/aaron-propeller/.local/bin:$PATH"
 
 [ -f "/Users/aaron-propeller/.ghcup/env" ] && source "/Users/aaron-propeller/.ghcup/env" # ghcup-env
 CRYSTAL_OPTS="--link-flags=-Wl,-ld_classic"
+

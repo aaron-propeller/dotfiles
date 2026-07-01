@@ -1,18 +1,22 @@
 {
   "shellPath": "/bin/zsh",
   "shellCommandPrefix": "source ~/.zshrc",
-  "lastChangelogVersion": "0.73.0",
+  "lastChangelogVersion": "0.80.2",
   "enableSkillCommands": false,
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "medium",
+  "defaultProvider": "amazon-bedrock",
+  "defaultModel": "global.anthropic.claude-opus-4-8",
+  "defaultThinkingLevel": "xhigh",
   "packages": [
-    "/Users/aaron/src/pi-packages/packages/pippin",
-    "/Users/aaron/src/pi-packages/packages/pi-cockpit",
-    "/Users/aaron/src/pi-packages/packages/themes",
-    "/Users/aaron/src/pi-packages/packages/pi-plan",
-    "/Users/aaron/src/pi-packages/packages/pi-mode-plan",
-    "npm:pi-mcp-adapter"
+    "~/src/pi-packages/packages/pippin",
+    "~/src/pi-packages/packages/pi-cockpit",
+    "~/src/pi-packages/packages/pi-personas",
+    "~/src/pi-packages/packages/themes",
+    "~/src/pi-packages/packages/pi-plan",
+    "~/src/pi-packages/packages/pi-mode-plan",
+    "~/src/pi-packages/packages/pi-bedrock-mantle",
+    "npm:pi-mcp-adapter",
+    "../../src/pi-packages/packages/pi-packages-requests",
+    "npm:@pi-stef/figma"
   ],
   "theme": "nordic",
   "pippin": {
