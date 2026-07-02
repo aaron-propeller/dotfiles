@@ -9,7 +9,7 @@
 #   scripts/nuke.sh                # preview + confirm, then wipe
 #   scripts/nuke.sh --dry-run      # print what would happen, change nothing
 #   scripts/nuke.sh --yes          # skip the "type nuke" prompt
-#   scripts/nuke.sh --reinit       # also run `chezmoi init --apply Azzapop` at the end
+#   scripts/nuke.sh --reinit       # also run `chezmoi init --apply aaron-propeller` at the end
 #   scripts/nuke.sh --yes --reinit # full unattended rebuild
 #
 # What it does NOT touch:
@@ -23,7 +23,8 @@ set -euo pipefail
 DRY_RUN=false
 SKIP_CONFIRM=false
 REINIT=false
-CHEZMOI_INIT_USER="Azzapop"
+CHEZMOI_INIT_USER="aaron-propeller"
+CHEZMOI_INIT_BRANCH="propelleraero"
 
 for arg in "$@"; do
   case "$arg" in
@@ -137,7 +138,7 @@ fi
 echo
 echo "==> Then: chezmoi purge --force (removes ~/.local/share/chezmoi + ~/.config/chezmoi + state)"
 if $REINIT; then
-  echo "==> Then: chezmoi init --apply $CHEZMOI_INIT_USER"
+  echo "==> Then: chezmoi init --branch $CHEZMOI_INIT_BRANCH --apply $CHEZMOI_INIT_USER"
 fi
 
 if $DRY_RUN; then
@@ -206,10 +207,10 @@ run chezmoi purge --force
 
 if $REINIT; then
   echo
-  echo "==> Re-initialising chezmoi from $CHEZMOI_INIT_USER"
+  echo "==> Re-initialising chezmoi from $CHEZMOI_INIT_USER ($CHEZMOI_INIT_BRANCH)"
   # Use the official bootstrap so it fetches the correct-arch binary if brew's
   # copy has been clobbered too.
-  sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply "$CHEZMOI_INIT_USER"
+  sh -c "$(curl -fsLS get.chezmoi.io)" -- init --branch "$CHEZMOI_INIT_BRANCH" --apply "$CHEZMOI_INIT_USER"
 fi
 
 echo
@@ -218,6 +219,6 @@ if ! $REINIT; then
   cat <<NOTE
 
 Re-install with:
-  sh -c "\$(curl -fsLS get.chezmoi.io)" -- init --apply $CHEZMOI_INIT_USER
+  sh -c "\$(curl -fsLS get.chezmoi.io)" -- init --branch $CHEZMOI_INIT_BRANCH --apply $CHEZMOI_INIT_USER
 NOTE
 fi

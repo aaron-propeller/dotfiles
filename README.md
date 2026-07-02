@@ -29,7 +29,7 @@ macOS-only. Apple Silicon and Intel both supported.
 ### Bootstrap
 
 ```sh
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply Azzapop
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --branch propelleraero --apply aaron-propeller
 ```
 
 Chezmoi will prompt for:
