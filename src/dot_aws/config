@@ -1,0 +1,48 @@
+[default]
+sso_start_url = https://propelleraero.awsapps.com/start
+sso_region = ap-southeast-2
+sso_account_id = 863601540056
+sso_role_name = data-team-developer
+region = us-east-1
+
+# [default]
+# sso_start_url = https://propelleraero.awsapps.com/start
+# sso_region = ap-southeast-2
+# sso_account_id = 863601540056
+# sso_role_name = on-call-developer
+# region = us-east-1
+
+[profile data-account]
+source_profile = default
+role_arn = arn:aws:iam::863601540056:role/data-team-developer
+region = us-east-2
+
+[profile data-account-break-glass]
+source_profile = default
+role_arn = arn:aws:iam::863601540056:role/on-call-developer-break-glass
+region = us-east-1
+
+[profile development-account]
+source_profile = default
+role_arn = arn:aws:iam::938257508866:role/developer
+region = us-east-1
+
+[profile hackathon-account]
+source_profile = default
+role_arn = arn:aws:iam::592053396937:role/developer
+region = us-east-1
+
+[profile production-account]
+source_profile = default
+role_arn = arn:aws:iam::621673481476:role/developer
+region = us-east-1
+
+[profile production-account-break-glass]
+source_profile = default
+role_arn = arn:aws:iam::621673481476:role/on-call-developer-break-glass
+region = us-east-1
+
+[profile devops-account]
+source_profile = default
+role_arn = arn:aws:iam::358152196273:role/developer
+region = us-east-1
