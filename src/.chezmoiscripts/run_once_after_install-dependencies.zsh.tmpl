@@ -10,6 +10,12 @@ echo "Installing brew..."
 # Configure brew to download and install necessary applications
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
+# Load brew into the current shell so subsequent `brew` / `pnpm` / `gh` / etc.
+# calls resolve. On a fresh machine ~/.zshrc doesn't put /opt/homebrew/bin on
+# PATH until path.zsh runs, and sourcing .zshrc mid-install is fragile because
+# antidote/prompt setup can error out before reaching path.zsh.
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 brew update
 brew doctor
 
@@ -86,6 +92,11 @@ git clone https://github.com/nvm-sh/nvm.git ~/.nvm
 
 # Source the shell so we can install node using nvm
 source ~/.zshrc
+
+# Also load nvm directly — sourcing .zshrc can bail before reaching the nvm
+# init line if any earlier plugin/prompt file errors on a fresh install.
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
 # Install latest node version
 nvm install node
