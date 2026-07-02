@@ -116,6 +116,11 @@ Once the bootstrap finishes, a few things still need doing by hand:
       Developer** → check *"Integrate with 1Password CLI"*. The
       npm-token-refresh LaunchAgent has an `op whoami` preflight and skips
       until this is enabled, then picks up the token on its next 09:00 fire.
+      The first successful refresh also installs `@propelleraero/prp`
+      globally — it's not installed by `install-dependencies` because it lives
+      on the private Propeller npm registry that only becomes reachable once
+      the token is in `~/.npmrc`. To skip the wait for 09:00, run
+      `~/bin/npm-token-refresh.sh` manually after enabling the CLI.
 
 ## Caveats
 

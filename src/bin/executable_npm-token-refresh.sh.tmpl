@@ -24,4 +24,16 @@ fi
 TOKEN=$(op read 'op://General Propeller Shared/xwneoyzl3dju77445bvu6mftc4/password')
 npm config set //registry.npmjs.org/:_authToken "$TOKEN"
 echo "$(date -u +%FT%TZ) npm-token-refresh: token refreshed."
+
+# With the token now in ~/.npmrc, ensure the Propeller CLI is installed. Only
+# run on the first successful refresh (once prp is on PATH, this no-ops). This
+# is here rather than in install-dependencies because that script fires on
+# initial bootstrap, long before 1Password CLI signin is set up.
+if ! command -v prp >/dev/null 2>&1; then
+  export PNPM_HOME="$HOME/Library/pnpm"
+  export PATH="$PNPM_HOME:$PATH"
+  mkdir -p "$PNPM_HOME"
+  echo "$(date -u +%FT%TZ) npm-token-refresh: installing @propelleraero/prp..."
+  pnpm add -g @propelleraero/prp
+fi
 {{- end }}

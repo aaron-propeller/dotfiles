@@ -135,6 +135,9 @@ npm install -g typescript-language-server
 npm install -g jjson
 pnpm add -g --ignore-scripts @earendil-works/pi-coding-agent
 {{- if eq .user_data.machine_type "work" }}
-pnpm add -g @propelleraero/prp
+# @propelleraero/prp is on the private Propeller npm registry, which requires
+# an auth token in ~/.npmrc. That token is populated by the npm-token-refresh
+# LaunchAgent (once the user has signed into 1Password CLI). So prp is
+# installed from that script instead of here, once auth is actually available.
 {{- end }}
 
