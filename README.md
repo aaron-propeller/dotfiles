@@ -63,13 +63,19 @@ Chezmoi then runs `src/.chezmoiscripts/*` in alphabetical order:
 2. `install-dependencies` — Xcode CLT, Homebrew, all brew formulae + casks
    (gated on `run_as_admin`), antidote, nvm + latest node, global npm/pnpm
    packages (`typescript-language-server`, `jjson`,
-   `@earendil-works/pi-coding-agent`, and on work: `@propelleraero/prp`).
-3. `install-motion-sync` (work only) — clones `motion-sync`, installs npm deps,
+   `@earendil-works/pi-coding-agent`).
+3. `install-interactive-1password` (work only) — **PAUSES**: opens 1Password,
+   waits for signin + CLI integration, verifies `op whoami`.
+4. `install-interactive-github-ssh` — **PAUSES**: generates a fresh ed25519 SSH
+   key, waits while you upload the public key to GitHub, verifies `ssh -T
+   git@github.com`.
+5. `install-motion-sync` (work only) — clones `motion-sync`, installs npm deps,
    registers the every-15-minute Motion↔Jira sync LaunchAgent.
-4. `install-pi-packages` — clones `pi-packages` and runs `npm install` in each
+6. `install-pi-packages` — clones `pi-packages` and runs `npm install` in each
    sub-package.
-5. `load-npm-token-refresh` (work only) — registers the daily 09:00 LaunchAgent
-   that refreshes the Propeller npm token from 1Password.
+7. `load-npm-token-refresh` (work only) — registers the daily 09:00 LaunchAgent
+   that refreshes the Propeller npm token from 1Password and installs
+   `@propelleraero/prp` on first successful fire.
 
 ### Notable brew packages
 
@@ -86,23 +92,33 @@ The full list lives in
 
 ## Manual setup
 
-Once the bootstrap finishes, a few things still need doing by hand:
+The install scripts pause and walk you through the two credential-gathering
+steps interactively (SSH key upload, 1Password signin). Everything else is
+either automated or truly manual (Apple ID, browser prefs, wallpaper choice).
 
-- [ ] **General:** sign in to the App Store, configure browser (default,
-      1Password + adblocker), sign in to Slack / Firefox etc.
+During `chezmoi apply`, you'll be prompted at two points:
+
+1. **`install-interactive-1password`** (work only). Opens the 1Password app,
+   waits while you sign in and enable **Settings → Developer → Integrate with
+   1Password CLI**, then verifies `op whoami` works before continuing.
+2. **`install-interactive-github-ssh`** (both). Generates a fresh ed25519 SSH
+   key, copies the public half to your clipboard, opens
+   <https://github.com/settings/ssh/new> in your browser, waits while you paste
+   and save it, then verifies `ssh -T git@github.com` before continuing.
+
+Both prompts also accept `skip` if you want to defer — skipped steps can be
+re-run with:
+
+```sh
+chezmoi state delete-bucket --bucket=scriptState
+chezmoi apply
+```
+
+After chezmoi finishes, these are the remaining truly-manual steps:
+
+- [ ] **General:** sign in to the App Store, sign in to Slack / Firefox etc.,
+      configure browser plugins (1Password, adblocker).
 - [ ] **Wallpaper:** pick one from `~/Pictures/wallpapers` in System Settings.
-- [ ] **SSH to GitHub.** Generate a key (`ssh-keygen -t ed25519 -C
-      "you@example.com"`) and upload the public key at
-      <https://github.com/settings/keys>. Then re-trigger the two skipped
-      scripts:
-
-  ```sh
-  chezmoi state delete-bucket --bucket=scriptState
-  chezmoi apply
-  ```
-
-  The `install-motion-sync` and `install-pi-packages` scripts have an SSH
-  preflight and skip cleanly on the first run if the key isn't in place yet.
 - [ ] **motion-sync `.env`** (work only). Copy `~/src/motion-sync/.env.example`
       to `.env`, fill in Motion + Jira credentials, then run:
 
@@ -110,17 +126,12 @@ Once the bootstrap finishes, a few things still need doing by hand:
   ~/src/motion-sync/scripts/install-daemon.sh
   ```
 
-  (Or re-run `chezmoi apply` after a `state delete-bucket` — the install script
-  runs it automatically once `.env` exists.)
-- [ ] **1Password CLI** (work only). Open the 1Password app → **Settings →
-      Developer** → check *"Integrate with 1Password CLI"*. The
-      npm-token-refresh LaunchAgent has an `op whoami` preflight and skips
-      until this is enabled, then picks up the token on its next 09:00 fire.
-      The first successful refresh also installs `@propelleraero/prp`
-      globally — it's not installed by `install-dependencies` because it lives
-      on the private Propeller npm registry that only becomes reachable once
-      the token is in `~/.npmrc`. To skip the wait for 09:00, run
-      `~/bin/npm-token-refresh.sh` manually after enabling the CLI.
+  (The `install-motion-sync` script skips the daemon install cleanly if `.env`
+  is missing at bootstrap time.)
+
+The first successful `npm-token-refresh` run — which happens automatically at
+09:00 daily, or immediately after 1Password signin if you re-run
+`~/bin/npm-token-refresh.sh` — also installs `@propelleraero/prp` globally.
 
 ## Caveats
 

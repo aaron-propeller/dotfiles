@@ -1,0 +1,94 @@
+#! /bin/zsh
+{{- /*
+Interactive: generate a new ed25519 SSH key, wait while the user uploads the
+public half to GitHub, verify.
+
+Runs after install-dependencies and before install-motion-sync + install-pi-packages
+(both of which clone via git@github.com and need this to work).
+
+Runs on BOTH machine types because pi-packages is cloned on personal machines
+too.
+*/}}
+set -e
+
+ssh_github_ok() {
+  ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 2>&1 \
+    | grep -qE "successfully authenticated|You've successfully authenticated"
+}
+
+# Fast path: if GitHub already recognises this machine's key, skip.
+if ssh_github_ok; then
+  echo "GitHub SSH auth already works — skipping SSH key setup."
+  exit 0
+fi
+
+KEY_PATH="$HOME/.ssh/id_ed25519"
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+
+# Back up any existing key so we don't clobber it silently. (Doesn't apply on a
+# clean install; matters if this script re-runs after a manual key was already
+# put here.)
+if [[ -f "$KEY_PATH" ]]; then
+  ts=$(date +%Y%m%d-%H%M%S)
+  echo "Existing key at $KEY_PATH — backing up to $KEY_PATH.bak.$ts"
+  mv "$KEY_PATH" "$KEY_PATH.bak.$ts"
+  [[ -f "$KEY_PATH.pub" ]] && mv "$KEY_PATH.pub" "$KEY_PATH.pub.bak.$ts"
+fi
+
+echo "Generating a new ed25519 SSH key at $KEY_PATH..."
+ssh-keygen -t ed25519 -C "$USER@$(hostname -s)" -f "$KEY_PATH" -N ""
+chmod 600 "$KEY_PATH"
+chmod 644 "$KEY_PATH.pub"
+
+# Trust GitHub's host keys up front so the ssh -T verification below doesn't
+# stall on an interactive 'yes/no' prompt.
+if ! grep -q "github.com" "$HOME/.ssh/known_hosts" 2>/dev/null; then
+  ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
+fi
+
+# Copy pub key to clipboard so the user can just paste into GitHub.
+pbcopy < "$KEY_PATH.pub" 2>/dev/null || true
+
+cat <<BANNER
+
+======================================================================
+  ACTION REQUIRED: Add this SSH public key to GitHub
+======================================================================
+
+  Public key (already copied to your clipboard):
+
+BANNER
+cat "$KEY_PATH.pub"
+cat <<BANNER
+
+  Steps:
+    1. A browser tab is about to open at
+       https://github.com/settings/ssh/new
+       (sign in to GitHub first if needed).
+    2. Title: '$(hostname -s)' (or whatever makes sense to you).
+    3. Key type: 'Authentication Key'.
+    4. Paste (⌘-V — key is already in your clipboard).
+    5. Click 'Add SSH key' and authenticate if prompted.
+    6. Return to this terminal.
+
+BANNER
+
+open "https://github.com/settings/ssh/new" 2>/dev/null || true
+
+while true; do
+  printf "  Press Enter when done (or type 'skip' to skip this step): "
+  read -r ans </dev/tty
+  if [[ "$ans" == "skip" ]]; then
+    echo "  Skipped. motion-sync and pi-packages clones will be skipped until"
+    echo "  the key is uploaded; re-run:"
+    echo "    chezmoi state delete-bucket --bucket=scriptState && chezmoi apply"
+    exit 0
+  fi
+  if ssh_github_ok; then
+    echo "  ✓ GitHub SSH auth verified."
+    break
+  fi
+  echo "  ✗ GitHub still doesn't recognise this key. Make sure you clicked"
+  echo "    'Add SSH key' on the GitHub page, then try again."
+done
