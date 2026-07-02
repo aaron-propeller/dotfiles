@@ -19,6 +19,20 @@ REPO_DIR="{{ .chezmoi.homeDir }}/src/pi-packages"
 
 echo "Setting up pi-packages..."
 
+# Preflight: skip cleanly if SSH to github.com isn't set up yet — the README's
+# manual step (upload an SSH key) may not have been done at first-boot time.
+if ! ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 2>&1 \
+    | grep -qE "successfully authenticated|You've successfully authenticated"; then
+  cat <<EOM
+
+  !! Skipping pi-packages: SSH auth to github.com is not set up.
+     Generate an SSH key, add it to https://github.com/settings/keys, then run:
+       chezmoi state delete-bucket --bucket=scriptState && chezmoi apply
+
+EOM
+  exit 0
+fi
+
 # Make nvm-managed node available.
 export NVM_DIR="{{ .chezmoi.homeDir }}/.nvm"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then

@@ -12,7 +12,6 @@
     "~/src/pi-packages/packages/pi-personas",
     "~/src/pi-packages/packages/themes",
     "~/src/pi-packages/packages/pi-plan",
-    "~/src/pi-packages/packages/pi-mode-plan",
     "~/src/pi-packages/packages/pi-bedrock-mantle",
     "npm:pi-mcp-adapter",
     "../../src/pi-packages/packages/pi-packages-requests",
@@ -22,13 +21,13 @@
   "pippin": {
     "specs": [
       {
-        "path": "/Users/aaron/src/pi-packages/packages/pi-cockpit"
+        "path": "~/src/pi-packages/packages/pi-cockpit"
       },
       {
-        "path": "/Users/aaron/src/pi-packages/packages/themes"
+        "path": "~/src/pi-packages/packages/themes"
       },
       {
-        "path": "/Users/aaron/src/pi-packages/~/src/pi-packages/packages/pippin"
+        "path": "~/src/pi-packages/packages/pippin"
       }
     ]
   },

@@ -7,6 +7,21 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
 export NVM_DIR="$HOME/.nvm"
 . "$NVM_DIR/nvm.sh"
 
+# Preflight: skip cleanly if 1Password CLI isn't signed in yet.
+#
+# On a fresh install the LaunchAgent's first RunAtLoad fires before the user
+# has had a chance to enable 1Password app + CLI integration (or run
+# `op signin`). Failing loudly here left the log full of scary auth errors and
+# no npm token set. Skipping is fine — the agent re-fires daily at 09:00 and
+# once signin is set up the next fire succeeds.
+if ! op whoami >/dev/null 2>&1; then
+  echo "$(date -u +%FT%TZ) npm-token-refresh: 1Password CLI not signed in; skipping."
+  echo "  Enable 1Password app -> Settings -> Developer -> 'Integrate with 1Password CLI',"
+  echo "  or run 'op signin', then this LaunchAgent will pick up the token on next fire."
+  exit 0
+fi
+
 TOKEN=$(op read 'op://General Propeller Shared/xwneoyzl3dju77445bvu6mftc4/password')
 npm config set //registry.npmjs.org/:_authToken "$TOKEN"
+echo "$(date -u +%FT%TZ) npm-token-refresh: token refreshed."
 {{- end }}
