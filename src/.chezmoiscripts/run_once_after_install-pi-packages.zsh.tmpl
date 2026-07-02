@@ -44,7 +44,12 @@ mkdir -p "$(dirname "$REPO_DIR")"
 
 if [[ -d "$REPO_DIR/.git" ]]; then
   echo "  pi-packages repo already exists, pulling latest..."
-  git -C "$REPO_DIR" pull --ff-only
+  git -C "$REPO_DIR" fetch --quiet origin || true
+  if git -C "$REPO_DIR" rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
+    git -C "$REPO_DIR" pull --ff-only --quiet || echo "  (fast-forward failed; leaving as-is)"
+  else
+    echo "  (no upstream tracking on current branch; skipping pull)"
+  fi
 else
   echo "  cloning pi-packages into $REPO_DIR..."
   git clone "$REPO_URL" "$REPO_DIR"

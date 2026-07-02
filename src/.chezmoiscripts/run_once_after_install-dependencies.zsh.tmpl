@@ -1,5 +1,21 @@
 #! /bin/zsh
 
+# Arch guard: on Apple Silicon, refuse to run under Rosetta 2. Homebrew's
+# arm64 prefix (/opt/homebrew) rejects x86_64 cask installs with
+#   Error: Cannot install under Rosetta 2 in ARM default prefix
+# Rather than let 10+ casks fail one by one, bail early with instructions.
+if [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" && "$(uname -m)" == "x86_64" ]]; then
+  cat >&2 <<'ROSETTA_ERR'
+error: this shell is running under Rosetta 2 (x86_64) on an arm64 Mac.
+       Homebrew casks will not install into /opt/homebrew from a Rosetta
+       shell. Quit this terminal, uncheck 'Open using Rosetta' in the
+       terminal app's Get Info panel, re-open, verify with 'uname -m'
+       (should print arm64), then re-run:
+         chezmoi state delete-bucket --bucket=scriptState && chezmoi apply
+ROSETTA_ERR
+  exit 1
+fi
+
 echo "Installing Xcode command line tools..."
 xcode-select --install
 
@@ -67,10 +83,9 @@ brew install --cask google-chrome
 brew install --cask 1password-cli
 brew install --cask freelens
 brew install --cask cmux
-brew install --cask cmux-nightly
 brew install --cask motion
 brew install --cask notion-calendar
-brew install --cask tailscale
+brew install --cask tailscale-app
 {{- end }}
 {{- end }}
 

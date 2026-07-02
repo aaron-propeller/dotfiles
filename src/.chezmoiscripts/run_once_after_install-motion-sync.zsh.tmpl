@@ -46,7 +46,15 @@ mkdir -p "$(dirname "$REPO_DIR")"
 
 if [[ -d "$REPO_DIR/.git" ]]; then
   echo "  motion-sync repo already exists, pulling latest..."
-  git -C "$REPO_DIR" pull --ff-only
+  # Fetch first so we have current remote refs. Only try to fast-forward if the
+  # branch has an upstream configured — a detached or upstream-less local branch
+  # otherwise errors out with 'no tracking information'.
+  git -C "$REPO_DIR" fetch --quiet origin || true
+  if git -C "$REPO_DIR" rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
+    git -C "$REPO_DIR" pull --ff-only --quiet || echo "  (fast-forward failed; leaving as-is)"
+  else
+    echo "  (no upstream tracking on current branch; skipping pull)"
+  fi
 else
   echo "  cloning motion-sync into $REPO_DIR..."
   git clone "$REPO_URL" "$REPO_DIR"
