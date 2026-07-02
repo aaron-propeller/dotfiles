@@ -78,18 +78,20 @@ brew install --cask tailscale
 
 echo "Installing antidote for shell plugins..."
 
-# Install antidote to enable shell plugins
-git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.zsh/.antidote
+# Install antidote to enable shell plugins (idempotent — safe on re-runs).
+if [[ ! -d "$HOME/.zsh/.antidote/.git" ]]; then
+  git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.zsh/.antidote
+fi
 
 # --------------------------------------------------------
 
 echo "Installing nvm to manage node versions..."
 
-# Clone nvm and install the latest version of node
-git clone https://github.com/nvm-sh/nvm.git ~/.nvm
-
-# Go into the nvm repo in a subshell and checkout the latest release
-(cd ~/.nvm && git checkout v0.39.5)
+# Clone nvm and install the latest version of node (idempotent).
+if [[ ! -d "$HOME/.nvm/.git" ]]; then
+  git clone https://github.com/nvm-sh/nvm.git ~/.nvm
+  (cd ~/.nvm && git checkout v0.39.5)
+fi
 
 # Source the shell so we can install node using nvm
 source ~/.zshrc
@@ -105,6 +107,13 @@ nvm install node
 # --------------------------------------------------------
 
 echo "Installing shared node packages..."
+
+# pnpm refuses to install globals unless its global bin dir is on PATH. Its
+# default on macOS is ~/Library/pnpm. Set it up here for this script run;
+# path.zsh persists the same values for interactive shells.
+export PNPM_HOME="$HOME/Library/pnpm"
+mkdir -p "$PNPM_HOME"
+export PATH="$PNPM_HOME:$PATH"
 
 # Install some packages globally that are needed by nvim plugins
 npm install -g typescript-language-server
