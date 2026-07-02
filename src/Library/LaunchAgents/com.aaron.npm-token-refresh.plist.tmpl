@@ -1,3 +1,4 @@
+{{- if eq .user_data.machine_type "work" -}}
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -7,7 +8,7 @@
 
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/aaron-propeller/bin/npm-token-refresh.sh</string>
+        <string>{{ .chezmoi.homeDir }}/bin/npm-token-refresh.sh</string>
     </array>
 
     <key>StartCalendarInterval</key>
@@ -22,9 +23,10 @@
     <true/>
 
     <key>StandardOutPath</key>
-    <string>/Users/aaron-propeller/Library/Logs/npm-token-refresh.log</string>
+    <string>{{ .chezmoi.homeDir }}/Library/Logs/npm-token-refresh.log</string>
 
     <key>StandardErrorPath</key>
-    <string>/Users/aaron-propeller/Library/Logs/npm-token-refresh.log</string>
+    <string>{{ .chezmoi.homeDir }}/Library/Logs/npm-token-refresh.log</string>
 </dict>
 </plist>
+{{- end }}

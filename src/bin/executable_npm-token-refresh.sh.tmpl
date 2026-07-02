@@ -1,3 +1,4 @@
+{{- if eq .user_data.machine_type "work" -}}
 #!/bin/zsh
 set -euo pipefail
 
@@ -8,3 +9,4 @@ export NVM_DIR="$HOME/.nvm"
 
 TOKEN=$(op read 'op://General Propeller Shared/xwneoyzl3dju77445bvu6mftc4/password')
 npm config set //registry.npmjs.org/:_authToken "$TOKEN"
+{{- end }}

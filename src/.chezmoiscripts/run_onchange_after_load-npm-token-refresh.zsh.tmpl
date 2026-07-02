@@ -1,0 +1,49 @@
+#! /bin/zsh
+{{- if eq .user_data.machine_type "work" }}
+
+# (Re)load the npm-token-refresh LaunchAgent so it picks up updates to either
+# the plist or the underlying script. Re-runs whenever the hashes below change.
+#
+#   plist  hash: {{ include "Library/LaunchAgents/com.aaron.npm-token-refresh.plist.tmpl" | sha256sum }}
+#   script hash: {{ include "bin/executable_npm-token-refresh.sh.tmpl" | sha256sum }}
+
+set -e
+
+LABEL="com.aaron.npm-token-refresh"
+PLIST="{{ .chezmoi.homeDir }}/Library/LaunchAgents/${LABEL}.plist"
+DOMAIN="gui/$(id -u)"
+
+if [[ ! -f "$PLIST" ]]; then
+  echo "npm-token-refresh: $PLIST missing, skipping load."
+  exit 0
+fi
+
+echo "Loading LaunchAgent: $LABEL"
+
+# Validate before touching launchd so a bad edit can't leave a half-loaded agent.
+plutil -lint "$PLIST" >/dev/null
+
+# Ensure the log directory exists (StandardOutPath fails silently otherwise).
+mkdir -p "{{ .chezmoi.homeDir }}/Library/Logs"
+
+# bootout is async and noisy when the agent isn't loaded — swallow errors, then
+# wait for launchd to actually drop it before bootstrapping.
+launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
+for _ in $(seq 1 10); do
+  launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1 || break
+  sleep 1
+done
+
+for attempt in 1 2 3; do
+  if launchctl bootstrap "$DOMAIN" "$PLIST" 2>/dev/null; then
+    break
+  fi
+  if [[ "$attempt" == 3 ]]; then
+    echo "error: launchctl bootstrap failed after retries" >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+echo "  loaded. Next scheduled run: 09:00 daily (also fires at load)."
+{{- end }}
