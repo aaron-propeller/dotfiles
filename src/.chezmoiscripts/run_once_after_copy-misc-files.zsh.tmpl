@@ -1,4 +1,5 @@
 #! /bin/zsh
+{{- if eq .chezmoi.os "darwin" -}}
 
 echo "Copying fonts..."
 # Copy any fonts to the font book
@@ -7,3 +8,6 @@ cp -r {{ .chezmoi.workingTree }}/fonts/* {{ .chezmoi.homeDir }}/Library/Fonts
 echo "Linking wallpapers..."
 # Link wallpapers to the Pcitures folder
 ln -s {{ .chezmoi.workingTree }}/wallpapers {{ .chezmoi.homeDir }}/Pictures/wallpapers
+{{- else -}}
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} on {{ .chezmoi.os }} (macOS-only)"
+{{- end }}

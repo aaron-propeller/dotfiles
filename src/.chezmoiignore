@@ -1,3 +1,9 @@
+# OS-scoped ignores
+{{- if ne .chezmoi.os "darwin" }}
+Library/**
+{{ end -}}
+
+# Runtime pi state (regenerated on each start)
 ~/.pi/agent/auth.json
 ~/.pi/agent/usage-tracker-rate-limits.json
 ~/.pi/agent/.extmgr-cache/**

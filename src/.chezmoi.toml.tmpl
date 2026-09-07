@@ -1,7 +1,13 @@
-{{- $git_email := promptString "Git email address" -}}
-{{- $git_name := promptString "Git name" -}}
-{{- $run_as_admin := promptBool "Run as admin?" -}}
-{{- $machine_type := promptChoice "Personal or work machine?" (list "personal" "work") -}}
+{{- /* Bootstrap config generated from this template by `chezmoi init`.
+       macOS branch: interactive prompts as before.
+       Linux branch (Coder workspace): pull identity from env vars and default
+       the run_as_admin / machine_type choices so `chezmoi init --apply` runs
+       unattended in the no-TTY workspace boot. */ -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   $git_email := promptString "Git email address" -}}
+{{-   $git_name := promptString "Git name" -}}
+{{-   $run_as_admin := promptBool "Run as admin?" -}}
+{{-   $machine_type := promptChoice "Personal or work machine?" (list "personal" "work") -}}
 
 [data.git_data]
     git_email = {{ $git_email | quote }}
@@ -10,3 +16,13 @@
 [data.user_data]
     run_as_admin = {{ $run_as_admin }}
     machine_type = {{ $machine_type | quote }}
+{{- else -}}
+
+[data.git_data]
+    git_email = {{ env "CODER_WORKSPACE_OWNER_EMAIL" | default (env "GIT_AUTHOR_EMAIL") | default "coder@local" | quote }}
+    git_name  = {{ env "CODER_WORKSPACE_OWNER_FULL_NAME" | default (env "GIT_AUTHOR_NAME") | default "Coder Workspace" | quote }}
+
+[data.user_data]
+    run_as_admin = false
+    machine_type = "work"
+{{- end }}

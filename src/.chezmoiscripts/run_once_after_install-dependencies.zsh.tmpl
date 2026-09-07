@@ -1,4 +1,5 @@
 #! /bin/zsh
+{{- if eq .chezmoi.os "darwin" -}}
 
 # Arch guard: on Apple Silicon, refuse to run under Rosetta 2. Homebrew's
 # arm64 prefix (/opt/homebrew) rejects x86_64 cask installs with
@@ -140,4 +141,6 @@ pnpm add -g --ignore-scripts @earendil-works/pi-coding-agent
 # LaunchAgent (once the user has signed into 1Password CLI). So prp is
 # installed from that script instead of here, once auth is actually available.
 {{- end }}
-
+{{- else -}}
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} on {{ .chezmoi.os }} (macOS-only)"
+{{- end }}

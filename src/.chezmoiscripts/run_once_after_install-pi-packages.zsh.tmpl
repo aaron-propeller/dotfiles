@@ -1,24 +1,37 @@
 #! /bin/zsh
 
 # Clones aaron-propeller/pi-packages into ~/src and installs npm deps for each
-# sub-package that declares them. pi itself picks the packages up via the paths
-# already declared in ~/.pi/agent/settings.json (managed by chezmoi under
-# src/dot_pi/agent/settings.json), so no `pi install` step is needed here.
+# sub-package that declares them. pi itself picks the packages up via the
+# paths already declared in ~/.pi/agent/settings.json (managed by chezmoi
+# under src/dot_pi/agent/settings.json), so no `pi install` step is needed
+# here.
+#
+# Runs on both macOS and Linux (Coder workspace). Auth preference:
+#
+#   - macOS: SSH (git@github.com:…). Requires the manual key upload step
+#     from the README.
+#   - Linux (workspace): HTTPS (https://github.com/…). Coder's post-install
+#     configures `gh auth setup-git` so the gh credential helper answers
+#     git's HTTPS auth prompts with the propeller-ziggy[bot] token.
 #
 # See: https://github.com/aaron-propeller/pi-packages
 #
-# Prerequisites (handled by run_once_after_install-dependencies.zsh.tmpl):
-#   - git, nvm + node, npm
-# Prerequisites (handled by you, manually, per README.md):
-#   - An SSH key uploaded to GitHub
+# Prerequisites (handled by run_once_after_install-dependencies on macOS,
+# by the workspace image on Linux):
+#   - git, node, npm
 
 set -e
 
-REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
 REPO_DIR="{{ .chezmoi.homeDir }}/src/pi-packages"
+{{- if eq .chezmoi.os "darwin" }}
+REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
+{{- else }}
+REPO_URL="https://github.com/aaron-propeller/pi-packages.git"
+{{- end }}
 
-echo "Setting up pi-packages..."
+echo "Setting up pi-packages (url=$REPO_URL)..."
 
+{{- if eq .chezmoi.os "darwin" }}
 # Preflight: skip cleanly if SSH to github.com isn't set up yet — the README's
 # manual step (upload an SSH key) may not have been done at first-boot time.
 if ! ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 2>&1 \
@@ -32,8 +45,25 @@ if ! ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 
 EOM
   exit 0
 fi
+{{- else }}
+# Preflight: skip cleanly if gh isn't authenticated. Coder's post-install
+# sets this up on workspace start; a race on very first boot means we may
+# be earlier than that step, in which case we skip and rely on the next
+# chezmoi apply to catch up.
+if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then
+  cat <<EOM
 
-# Make nvm-managed node available.
+  !! Skipping pi-packages: gh CLI not authenticated yet.
+     Post-install will complete the gh setup on this workspace; re-run:
+       chezmoi state delete-bucket --bucket=scriptState && chezmoi apply
+
+EOM
+  exit 0
+fi
+gh auth setup-git 2>/dev/null || true
+{{- end }}
+
+# Make nvm-managed node available (macOS). Workspace uses system node.
 export NVM_DIR="{{ .chezmoi.homeDir }}/.nvm"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
   # shellcheck disable=SC1091
@@ -55,9 +85,9 @@ else
   git clone "$REPO_URL" "$REPO_DIR"
 fi
 
-# Install npm deps for each sub-package that has a package.json. Packages with
-# no dependencies are a fast no-op; this keeps the script future-proof as new
-# packages are added.
+# Install npm deps for each sub-package that has a package.json. Packages
+# with no dependencies are a fast no-op; this keeps the script future-proof
+# as new packages are added.
 for pkg in "$REPO_DIR"/packages/*/; do
   if [[ -f "$pkg/package.json" ]]; then
     echo "  npm install: $(basename "$pkg")"
