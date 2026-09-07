@@ -1,5 +1,5 @@
 #! /bin/zsh
-{{- if not .user_data.is_workspace -}}
+{{- if ne .user_data.profile "workspace" -}}
 
 # Arch guard: on Apple Silicon, refuse to run under Rosetta 2. Homebrew's
 # arm64 prefix (/opt/homebrew) rejects x86_64 cask installs with
@@ -50,10 +50,10 @@ brew install git-crypt
 brew install pnpm
 brew install pyenv
 brew install terminal-notifier
-{{- if eq .user_data.machine_type "personal" }}
+{{- if eq .user_data.profile "personal" }}
 # Personal clis
 {{- end }}
-{{- if eq .user_data.machine_type "work" }}
+{{- if eq .user_data.profile "work" }}
 # Work clis
 brew install awscli
 brew install tfenv
@@ -69,7 +69,7 @@ brew install --cask spotify
 brew install --cask ghostty
 brew install --cask docker
 brew install --cask finicky
-{{- if eq .user_data.machine_type "personal" }}
+{{- if eq .user_data.profile "personal" }}
 # Personal casks
 brew install --cask discord
 brew install --cask mullvadvpn
@@ -77,7 +77,7 @@ brew install --cask steam
 brew install --cask vlc
 brew install --cask openemu
 {{- end }}
-{{- if eq .user_data.machine_type "work" }}
+{{- if eq .user_data.profile "work" }}
 # Work casks
 brew install --cask visual-studio-code
 brew install --cask google-chrome
@@ -135,7 +135,7 @@ export PATH="$PNPM_HOME:$PATH"
 npm install -g typescript-language-server
 npm install -g jjson
 pnpm add -g --ignore-scripts @earendil-works/pi-coding-agent
-{{- if eq .user_data.machine_type "work" }}
+{{- if eq .user_data.profile "work" }}
 # @propelleraero/prp is on the private Propeller npm registry, which requires
 # an auth token in ~/.npmrc. That token is populated by the npm-token-refresh
 # LaunchAgent (once the user has signed into 1Password CLI). So prp is

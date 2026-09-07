@@ -8,10 +8,10 @@
 #
 # Runs on both physical machines and Coder workspaces. Auth preference:
 #
-#   - is_workspace = true:  HTTPS (https://github.com/…). Coder's post-install
+#   - profile = workspace:  HTTPS (https://github.com/…). Coder's post-install
 #     configures `gh auth setup-git` so the gh credential helper answers
 #     git's HTTPS auth prompts with the propeller-ziggy[bot] token.
-#   - is_workspace = false: SSH (git@github.com:…). Requires the manual key
+#   - profile in {personal, work}: SSH (git@github.com:…). Requires the manual key
 #     upload step from the README on first-boot for physical Macs.
 #
 # See: https://github.com/aaron-propeller/pi-packages
@@ -23,7 +23,7 @@
 set -e
 
 REPO_DIR="{{ .chezmoi.homeDir }}/src/pi-packages"
-{{- if .user_data.is_workspace }}
+{{- if eq .user_data.profile "workspace" }}
 REPO_URL="https://github.com/aaron-propeller/pi-packages.git"
 {{- else }}
 REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
@@ -31,7 +31,7 @@ REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
 
 echo "Setting up pi-packages (url=$REPO_URL)..."
 
-{{- if .user_data.is_workspace }}
+{{- if eq .user_data.profile "workspace" }}
 # Preflight: workspace uses HTTPS via gh's git credential helper. Skip cleanly
 # if gh isn't authenticated yet — Coder's post-install completes gh setup on
 # workspace start; a race on very first boot means we may be earlier than

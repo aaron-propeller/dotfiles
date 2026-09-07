@@ -1,17 +1,15 @@
 {{- /* Bootstrap config generated from this template by `chezmoi init`.
 
-       Machine roles:
+       Machine profile is a single 3-way enum:
+
          - "workspace"   Coder cloud workspace (Linux, no GUI, no TTY at init)
-         - "personal"    Personal physical Mac
-         - "work"        Propeller work physical Mac
+         - "personal"    Personal physical machine
+         - "work"        Propeller work physical machine (Mac today)
 
-       is_workspace is auto-detected from CODER_WORKSPACE_ID (Coder sets this
-       env var on every workspace agent). On any other machine, the usual
-       personal/work prompt runs and is_workspace=false.
-
-       Scripts gate on role, not OS, so a hypothetical Linux dev machine can
-       still bootstrap in "personal" or "work" mode without hitting workspace
-       shortcuts. */ -}}
+       workspace is auto-detected from CODER_WORKSPACE_ID. On anything else,
+       chezmoi prompts personal vs work as before. Scripts gate on profile,
+       not OS, so a hypothetical Linux dev laptop still bootstraps in
+       "personal" or "work" mode without hitting workspace shortcuts. */ -}}
 {{- $is_workspace := ne (env "CODER_WORKSPACE_ID") "" -}}
 {{- if $is_workspace -}}
 
@@ -21,13 +19,12 @@
 
 [data.user_data]
     run_as_admin = false
-    machine_type = "work"
-    is_workspace = true
+    profile      = "workspace"
 {{- else -}}
 {{-   $git_email := promptString "Git email address" -}}
 {{-   $git_name := promptString "Git name" -}}
 {{-   $run_as_admin := promptBool "Run as admin?" -}}
-{{-   $machine_type := promptChoice "Personal or work machine?" (list "personal" "work") -}}
+{{-   $profile := promptChoice "Machine profile?" (list "personal" "work") -}}
 
 [data.git_data]
     git_email = {{ $git_email | quote }}
@@ -35,6 +32,5 @@
 
 [data.user_data]
     run_as_admin = {{ $run_as_admin }}
-    machine_type = {{ $machine_type | quote }}
-    is_workspace = false
+    profile      = {{ $profile | quote }}
 {{- end }}

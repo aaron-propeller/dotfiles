@@ -1,5 +1,5 @@
 #! /bin/zsh
-{{- if not .user_data.is_workspace -}}
+{{- if ne .user_data.profile "workspace" -}}
 
 echo "Copying fonts..."
 # Copy any fonts to the font book
