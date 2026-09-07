@@ -9,5 +9,5 @@ echo "Linking wallpapers..."
 # Link wallpapers to the Pcitures folder
 ln -s {{ .chezmoi.workingTree }}/wallpapers {{ .chezmoi.homeDir }}/Pictures/wallpapers
 {{- else -}}
-echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a Coder workspace"
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a cloud workspace"
 {{- end }}

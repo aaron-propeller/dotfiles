@@ -6,9 +6,9 @@
 # under src/dot_pi/agent/settings.json), so no `pi install` step is needed
 # here.
 #
-# Runs on both physical machines and Coder workspaces. Auth preference:
+# Runs on both physical machines and cloud workspaces. Auth preference:
 #
-#   - profile = workspace:  HTTPS (https://github.com/…). Coder's post-install
+#   - profile = workspace:  HTTPS (https://github.com/…). the workspace's post-install
 #     configures `gh auth setup-git` so the gh credential helper answers
 #     git's HTTPS auth prompts with the propeller-ziggy[bot] token.
 #   - profile in {personal, work}: SSH (git@github.com:…). Requires the manual key
@@ -33,7 +33,7 @@ echo "Setting up pi-packages (url=$REPO_URL)..."
 
 {{- if eq .user_data.profile "workspace" }}
 # Preflight: workspace uses HTTPS via gh's git credential helper. Skip cleanly
-# if gh isn't authenticated yet — Coder's post-install completes gh setup on
+# if gh isn't authenticated yet — the workspace's post-install completes gh setup on
 # workspace start; a race on very first boot means we may be earlier than
 # that step, in which case we skip and rely on the next chezmoi apply.
 if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then

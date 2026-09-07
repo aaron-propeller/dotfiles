@@ -79,5 +79,5 @@ echo "  installing motion-sync LaunchAgent (runs every 15 min)..."
 "$REPO_DIR/scripts/install-daemon.sh"
 {{- end }}
 {{- else -}}
-echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a Coder workspace"
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a cloud workspace"
 {{- end }}

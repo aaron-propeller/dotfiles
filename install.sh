@@ -1,5 +1,5 @@
 #!/bin/sh
-# Coder-dotfiles entrypoint. Coder clones this repo to ~/dotfiles and runs
+# Cloud-workspace entrypoint. The workspace host clones this repo to ~/dotfiles and runs
 # this script on every workspace start. On macOS this is redundant with the
 # usual chezmoi bootstrap; running it a second time is a no-op because
 # `chezmoi apply` is idempotent.
@@ -18,7 +18,7 @@ if ! command -v chezmoi >/dev/null 2>&1; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Coder already cloned this repo to $DOTFILES_DIR. Point chezmoi at it as the
+# The workspace has already cloned this repo to $DOTFILES_DIR. Point chezmoi at it as the
 # source rather than re-cloning to ~/.local/share/chezmoi (which would leave
 # the two out of sync on future pulls).
 #

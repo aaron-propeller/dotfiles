@@ -94,5 +94,5 @@ while true; do
   echo "    'Add SSH key' on the GitHub page, then try again."
 done
 {{- else -}}
-echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a Coder workspace"
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a cloud workspace"
 {{- end }}

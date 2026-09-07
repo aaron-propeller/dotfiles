@@ -2,20 +2,24 @@
 
        Machine profile is a single 3-way enum:
 
-         - "workspace"   Coder cloud workspace (Linux, no GUI, no TTY at init)
+         - "workspace"   Cloud workspace (no GUI, no TTY at init)
          - "personal"    Personal physical machine
-         - "work"        Propeller work physical machine (Mac today)
+         - "work"        Work physical machine
 
-       workspace is auto-detected from CODER_WORKSPACE_ID. On anything else,
-       chezmoi prompts personal vs work as before. Scripts gate on profile,
-       not OS, so a hypothetical Linux dev laptop still bootstraps in
-       "personal" or "work" mode without hitting workspace shortcuts. */ -}}
-{{- $is_workspace := ne (env "CODER_WORKSPACE_ID") "" -}}
-{{- if $is_workspace -}}
+       The workspace-side is expected to export:
+         DOTFILES_PROFILE=workspace
+       and (optionally) GIT_AUTHOR_NAME / GIT_AUTHOR_EMAIL for git identity.
+       Falling back to a prompt on any interactive shell.
+
+       Scripts gate on profile, not OS, so a hypothetical Linux dev laptop
+       still bootstraps in "personal" or "work" mode without hitting
+       workspace shortcuts. */ -}}
+{{- $env_profile := env "DOTFILES_PROFILE" -}}
+{{- if eq $env_profile "workspace" -}}
 
 [data.git_data]
-    git_email = {{ env "CODER_WORKSPACE_OWNER_EMAIL" | default (env "GIT_AUTHOR_EMAIL") | default "coder@local" | quote }}
-    git_name  = {{ env "CODER_WORKSPACE_OWNER_FULL_NAME" | default (env "GIT_AUTHOR_NAME") | default "Coder Workspace" | quote }}
+    git_email = {{ env "GIT_AUTHOR_EMAIL" | default "workspace@local" | quote }}
+    git_name  = {{ env "GIT_AUTHOR_NAME"  | default "Cloud Workspace" | quote }}
 
 [data.user_data]
     run_as_admin = false
