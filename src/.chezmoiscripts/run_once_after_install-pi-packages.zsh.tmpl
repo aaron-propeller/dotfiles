@@ -1,25 +1,6 @@
 #! /bin/zsh
-
-# Clones aaron-propeller/pi-packages into ~/src and installs npm deps for each
-# sub-package that declares them. pi itself picks the packages up via the
-# paths already declared in ~/.pi/agent/settings.json (managed by chezmoi
-# under src/dot_pi/agent/settings.json), so no `pi install` step is needed
-# here.
-#
-# Runs on both physical machines and cloud workspaces. Auth preference:
-#
-#   - profile = workspace:  HTTPS (https://github.com/…). the workspace's post-install
-#     configures `gh auth setup-git` so the gh credential helper answers
-#     git's HTTPS auth prompts with the propeller-ziggy[bot] token.
-#   - profile in {personal, work}: SSH (git@github.com:…). Requires the manual key
-#     upload step from the README on first-boot for physical Macs.
-#
-# See: https://github.com/aaron-propeller/pi-packages
-#
-# Prerequisites (handled by run_once_after_install-dependencies on macOS,
-# by the workspace image on Linux):
-#   - git, node, npm
-
+# Clones aaron-propeller/pi-packages and runs npm install in each sub-package.
+# HTTPS clone on workspaces (uses gh's credential helper), SSH clone elsewhere.
 set -e
 
 REPO_DIR="{{ .chezmoi.homeDir }}/src/pi-packages"
@@ -32,39 +13,19 @@ REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
 echo "Setting up pi-packages (url=$REPO_URL)..."
 
 {{- if eq .user_data.profile "workspace" }}
-# Preflight: workspace uses HTTPS via gh's git credential helper. Skip cleanly
-# if gh isn't authenticated yet — the workspace's post-install completes gh setup on
-# workspace start; a race on very first boot means we may be earlier than
-# that step, in which case we skip and rely on the next chezmoi apply.
 if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then
-  cat <<EOM
-
-  !! Skipping pi-packages: gh CLI not authenticated yet.
-     Post-install will complete the gh setup on this workspace; re-run:
-       chezmoi state delete-bucket --bucket=scriptState && chezmoi apply
-
-EOM
+  echo "  skipping: gh not authenticated. Rerun with 'chezmoi state delete-bucket --bucket=scriptState && chezmoi apply'."
   exit 0
 fi
 gh auth setup-git 2>/dev/null || true
 {{- else }}
-# Preflight: physical machine uses SSH. Skip cleanly if SSH to github.com
-# isn't set up yet — the README's manual step (upload an SSH key) may not have
-# been done at first-boot time.
 if ! ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 2>&1 \
     | grep -qE "successfully authenticated|You've successfully authenticated"; then
-  cat <<EOM
-
-  !! Skipping pi-packages: SSH auth to github.com is not set up.
-     Generate an SSH key, add it to https://github.com/settings/keys, then run:
-       chezmoi state delete-bucket --bucket=scriptState && chezmoi apply
-
-EOM
+  echo "  skipping: no SSH auth to github.com. Add an SSH key at https://github.com/settings/keys then rerun with 'chezmoi state delete-bucket --bucket=scriptState && chezmoi apply'."
   exit 0
 fi
 {{- end }}
 
-# Make nvm-managed node available (macOS). Workspace uses system node.
 export NVM_DIR="{{ .chezmoi.homeDir }}/.nvm"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
   # shellcheck disable=SC1091
@@ -74,21 +35,14 @@ fi
 mkdir -p "$(dirname "$REPO_DIR")"
 
 if [[ -d "$REPO_DIR/.git" ]]; then
-  echo "  pi-packages repo already exists, pulling latest..."
   git -C "$REPO_DIR" fetch --quiet origin || true
   if git -C "$REPO_DIR" rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
-    git -C "$REPO_DIR" pull --ff-only --quiet || echo "  (fast-forward failed; leaving as-is)"
-  else
-    echo "  (no upstream tracking on current branch; skipping pull)"
+    git -C "$REPO_DIR" pull --ff-only --quiet || echo "  (fast-forward failed)"
   fi
 else
-  echo "  cloning pi-packages into $REPO_DIR..."
   git clone "$REPO_URL" "$REPO_DIR"
 fi
 
-# Install npm deps for each sub-package that has a package.json. Packages
-# with no dependencies are a fast no-op; this keeps the script future-proof
-# as new packages are added.
 for pkg in "$REPO_DIR"/packages/*/; do
   if [[ -f "$pkg/package.json" ]]; then
     echo "  npm install: $(basename "$pkg")"

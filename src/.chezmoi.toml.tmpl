@@ -1,21 +1,6 @@
-{{- /* Bootstrap config generated from this template by `chezmoi init`.
-
-       Machine profile is a single 3-way enum:
-
-         - "workspace"   Cloud workspace (no GUI, no TTY at init)
-         - "personal"    Personal physical machine
-         - "work"        Work physical machine
-
-       The workspace-side is expected to export:
-         DOTFILES_PROFILE=workspace
-       and (optionally) GIT_AUTHOR_NAME / GIT_AUTHOR_EMAIL for git identity.
-       Falling back to a prompt on any interactive shell.
-
-       Scripts gate on profile, not OS, so a hypothetical Linux dev laptop
-       still bootstraps in "personal" or "work" mode without hitting
-       workspace shortcuts. */ -}}
-{{- $env_profile := env "DOTFILES_PROFILE" -}}
-{{- if eq $env_profile "workspace" -}}
+{{- /* profile: workspace | personal | work
+       If DOTFILES_PROFILE=workspace is in the env, skip prompts. */ -}}
+{{- if eq (env "DOTFILES_PROFILE") "workspace" -}}
 
 [data.git_data]
     git_email = {{ env "GIT_AUTHOR_EMAIL" | default "workspace@local" | quote }}
