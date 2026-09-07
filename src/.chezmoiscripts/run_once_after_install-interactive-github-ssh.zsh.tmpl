@@ -1,4 +1,5 @@
 #! /bin/zsh
+{{- if ne .user_data.profile "workspace" -}}
 {{- /*
 Interactive: generate a new ed25519 SSH key, wait while the user uploads the
 public half to GitHub, verify.
@@ -92,3 +93,6 @@ while true; do
   echo "  ✗ GitHub still doesn't recognise this key. Make sure you clicked"
   echo "    'Add SSH key' on the GitHub page, then try again."
 done
+{{- else -}}
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a cloud workspace"
+{{- end }}

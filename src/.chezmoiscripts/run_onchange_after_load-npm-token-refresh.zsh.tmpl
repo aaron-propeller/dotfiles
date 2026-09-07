@@ -1,5 +1,6 @@
 #! /bin/zsh
-{{- if eq .user_data.machine_type "work" }}
+{{- if ne .user_data.profile "workspace" -}}
+{{- if eq .user_data.profile "work" }}
 
 # (Re)load the npm-token-refresh LaunchAgent so it picks up updates to either
 # the plist or the underlying script. Re-runs whenever the hashes below change.
@@ -46,4 +47,7 @@ for attempt in 1 2 3; do
 done
 
 echo "  loaded. Next scheduled run: 09:00 daily (also fires at load)."
+{{- end }}
+{{- else -}}
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a cloud workspace"
 {{- end }}

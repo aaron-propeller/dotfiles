@@ -1,39 +1,31 @@
 #! /bin/zsh
-
-# Clones aaron-propeller/pi-packages into ~/src and installs npm deps for each
-# sub-package that declares them. pi itself picks the packages up via the paths
-# already declared in ~/.pi/agent/settings.json (managed by chezmoi under
-# src/dot_pi/agent/settings.json), so no `pi install` step is needed here.
-#
-# See: https://github.com/aaron-propeller/pi-packages
-#
-# Prerequisites (handled by run_once_after_install-dependencies.zsh.tmpl):
-#   - git, nvm + node, npm
-# Prerequisites (handled by you, manually, per README.md):
-#   - An SSH key uploaded to GitHub
-
+# Clones aaron-propeller/pi-packages and runs npm install in each sub-package.
+# HTTPS clone on workspaces (uses gh's credential helper), SSH clone elsewhere.
 set -e
 
-REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
 REPO_DIR="{{ .chezmoi.homeDir }}/src/pi-packages"
+{{- if eq .user_data.profile "workspace" }}
+REPO_URL="https://github.com/aaron-propeller/pi-packages.git"
+{{- else }}
+REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
+{{- end }}
 
-echo "Setting up pi-packages..."
+echo "Setting up pi-packages (url=$REPO_URL)..."
 
-# Preflight: skip cleanly if SSH to github.com isn't set up yet — the README's
-# manual step (upload an SSH key) may not have been done at first-boot time.
-if ! ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 2>&1 \
-    | grep -qE "successfully authenticated|You've successfully authenticated"; then
-  cat <<EOM
-
-  !! Skipping pi-packages: SSH auth to github.com is not set up.
-     Generate an SSH key, add it to https://github.com/settings/keys, then run:
-       chezmoi state delete-bucket --bucket=scriptState && chezmoi apply
-
-EOM
+{{- if eq .user_data.profile "workspace" }}
+if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then
+  echo "  skipping: gh not authenticated. Rerun with 'chezmoi state delete-bucket --bucket=scriptState && chezmoi apply'."
   exit 0
 fi
+gh auth setup-git 2>/dev/null || true
+{{- else }}
+if ! ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 2>&1 \
+    | grep -qE "successfully authenticated|You've successfully authenticated"; then
+  echo "  skipping: no SSH auth to github.com. Add an SSH key at https://github.com/settings/keys then rerun with 'chezmoi state delete-bucket --bucket=scriptState && chezmoi apply'."
+  exit 0
+fi
+{{- end }}
 
-# Make nvm-managed node available.
 export NVM_DIR="{{ .chezmoi.homeDir }}/.nvm"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
   # shellcheck disable=SC1091
@@ -43,21 +35,14 @@ fi
 mkdir -p "$(dirname "$REPO_DIR")"
 
 if [[ -d "$REPO_DIR/.git" ]]; then
-  echo "  pi-packages repo already exists, pulling latest..."
   git -C "$REPO_DIR" fetch --quiet origin || true
   if git -C "$REPO_DIR" rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
-    git -C "$REPO_DIR" pull --ff-only --quiet || echo "  (fast-forward failed; leaving as-is)"
-  else
-    echo "  (no upstream tracking on current branch; skipping pull)"
+    git -C "$REPO_DIR" pull --ff-only --quiet || echo "  (fast-forward failed)"
   fi
 else
-  echo "  cloning pi-packages into $REPO_DIR..."
   git clone "$REPO_URL" "$REPO_DIR"
 fi
 
-# Install npm deps for each sub-package that has a package.json. Packages with
-# no dependencies are a fast no-op; this keeps the script future-proof as new
-# packages are added.
 for pkg in "$REPO_DIR"/packages/*/; do
   if [[ -f "$pkg/package.json" ]]; then
     echo "  npm install: $(basename "$pkg")"

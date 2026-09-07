@@ -1,7 +1,19 @@
-{{- $git_email := promptString "Git email address" -}}
-{{- $git_name := promptString "Git name" -}}
-{{- $run_as_admin := promptBool "Run as admin?" -}}
-{{- $machine_type := promptChoice "Personal or work machine?" (list "personal" "work") -}}
+{{- /* profile: workspace | personal | work
+       If DOTFILES_PROFILE=workspace is in the env, skip prompts. */ -}}
+{{- if eq (env "DOTFILES_PROFILE") "workspace" -}}
+
+[data.git_data]
+    git_email = {{ env "GIT_AUTHOR_EMAIL" | default "workspace@local" | quote }}
+    git_name  = {{ env "GIT_AUTHOR_NAME"  | default "Cloud Workspace" | quote }}
+
+[data.user_data]
+    run_as_admin = false
+    profile      = "workspace"
+{{- else -}}
+{{-   $git_email := promptString "Git email address" -}}
+{{-   $git_name := promptString "Git name" -}}
+{{-   $run_as_admin := promptBool "Run as admin?" -}}
+{{-   $profile := promptChoice "Machine profile?" (list "personal" "work") -}}
 
 [data.git_data]
     git_email = {{ $git_email | quote }}
@@ -9,4 +21,5 @@
 
 [data.user_data]
     run_as_admin = {{ $run_as_admin }}
-    machine_type = {{ $machine_type | quote }}
+    profile      = {{ $profile | quote }}
+{{- end }}
