@@ -1,5 +1,5 @@
 #! /bin/zsh
-{{- if eq .chezmoi.os "darwin" -}}
+{{- if not .user_data.is_workspace -}}
 
 echo "Copying fonts..."
 # Copy any fonts to the font book
@@ -9,5 +9,5 @@ echo "Linking wallpapers..."
 # Link wallpapers to the Pcitures folder
 ln -s {{ .chezmoi.workingTree }}/wallpapers {{ .chezmoi.homeDir }}/Pictures/wallpapers
 {{- else -}}
-echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} on {{ .chezmoi.os }} (macOS-only)"
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a Coder workspace"
 {{- end }}

@@ -6,13 +6,13 @@
 # under src/dot_pi/agent/settings.json), so no `pi install` step is needed
 # here.
 #
-# Runs on both macOS and Linux (Coder workspace). Auth preference:
+# Runs on both physical machines and Coder workspaces. Auth preference:
 #
-#   - macOS: SSH (git@github.com:…). Requires the manual key upload step
-#     from the README.
-#   - Linux (workspace): HTTPS (https://github.com/…). Coder's post-install
+#   - is_workspace = true:  HTTPS (https://github.com/…). Coder's post-install
 #     configures `gh auth setup-git` so the gh credential helper answers
 #     git's HTTPS auth prompts with the propeller-ziggy[bot] token.
+#   - is_workspace = false: SSH (git@github.com:…). Requires the manual key
+#     upload step from the README on first-boot for physical Macs.
 #
 # See: https://github.com/aaron-propeller/pi-packages
 #
@@ -23,33 +23,19 @@
 set -e
 
 REPO_DIR="{{ .chezmoi.homeDir }}/src/pi-packages"
-{{- if eq .chezmoi.os "darwin" }}
-REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
-{{- else }}
+{{- if .user_data.is_workspace }}
 REPO_URL="https://github.com/aaron-propeller/pi-packages.git"
+{{- else }}
+REPO_URL="git@github.com:aaron-propeller/pi-packages.git"
 {{- end }}
 
 echo "Setting up pi-packages (url=$REPO_URL)..."
 
-{{- if eq .chezmoi.os "darwin" }}
-# Preflight: skip cleanly if SSH to github.com isn't set up yet — the README's
-# manual step (upload an SSH key) may not have been done at first-boot time.
-if ! ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 2>&1 \
-    | grep -qE "successfully authenticated|You've successfully authenticated"; then
-  cat <<EOM
-
-  !! Skipping pi-packages: SSH auth to github.com is not set up.
-     Generate an SSH key, add it to https://github.com/settings/keys, then run:
-       chezmoi state delete-bucket --bucket=scriptState && chezmoi apply
-
-EOM
-  exit 0
-fi
-{{- else }}
-# Preflight: skip cleanly if gh isn't authenticated. Coder's post-install
-# sets this up on workspace start; a race on very first boot means we may
-# be earlier than that step, in which case we skip and rely on the next
-# chezmoi apply to catch up.
+{{- if .user_data.is_workspace }}
+# Preflight: workspace uses HTTPS via gh's git credential helper. Skip cleanly
+# if gh isn't authenticated yet — Coder's post-install completes gh setup on
+# workspace start; a race on very first boot means we may be earlier than
+# that step, in which case we skip and rely on the next chezmoi apply.
 if ! command -v gh >/dev/null 2>&1 || ! gh auth status >/dev/null 2>&1; then
   cat <<EOM
 
@@ -61,6 +47,21 @@ EOM
   exit 0
 fi
 gh auth setup-git 2>/dev/null || true
+{{- else }}
+# Preflight: physical machine uses SSH. Skip cleanly if SSH to github.com
+# isn't set up yet — the README's manual step (upload an SSH key) may not have
+# been done at first-boot time.
+if ! ssh -T -o BatchMode=yes -o StrictHostKeyChecking=accept-new git@github.com 2>&1 \
+    | grep -qE "successfully authenticated|You've successfully authenticated"; then
+  cat <<EOM
+
+  !! Skipping pi-packages: SSH auth to github.com is not set up.
+     Generate an SSH key, add it to https://github.com/settings/keys, then run:
+       chezmoi state delete-bucket --bucket=scriptState && chezmoi apply
+
+EOM
+  exit 0
+fi
 {{- end }}
 
 # Make nvm-managed node available (macOS). Workspace uses system node.

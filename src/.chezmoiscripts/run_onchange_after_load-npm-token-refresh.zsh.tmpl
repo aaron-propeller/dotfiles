@@ -1,5 +1,5 @@
 #! /bin/zsh
-{{- if eq .chezmoi.os "darwin" -}}
+{{- if not .user_data.is_workspace -}}
 {{- if eq .user_data.machine_type "work" }}
 
 # (Re)load the npm-token-refresh LaunchAgent so it picks up updates to either
@@ -49,5 +49,5 @@ done
 echo "  loaded. Next scheduled run: 09:00 daily (also fires at load)."
 {{- end }}
 {{- else -}}
-echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} on {{ .chezmoi.os }} (macOS-only)"
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a Coder workspace"
 {{- end }}

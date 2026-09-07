@@ -1,5 +1,5 @@
 #! /bin/zsh
-{{- if eq .chezmoi.os "darwin" -}}
+{{- if not .user_data.is_workspace -}}
 {{- /*
 Interactive: generate a new ed25519 SSH key, wait while the user uploads the
 public half to GitHub, verify.
@@ -94,5 +94,5 @@ while true; do
   echo "    'Add SSH key' on the GitHub page, then try again."
 done
 {{- else -}}
-echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} on {{ .chezmoi.os }} (macOS-only)"
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a Coder workspace"
 {{- end }}
