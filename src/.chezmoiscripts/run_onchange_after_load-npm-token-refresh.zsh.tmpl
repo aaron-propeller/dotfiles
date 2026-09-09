@@ -1,5 +1,5 @@
-#! /bin/zsh
-{{- if ne .user_data.profile "workspace" -}}
+#!/usr/bin/env bash
+{{ if ne .user_data.profile "workspace" -}}
 {{- if eq .user_data.profile "work" }}
 
 # (Re)load the npm-token-refresh LaunchAgent so it picks up updates to either

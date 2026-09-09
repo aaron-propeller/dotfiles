@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+{{ if eq .user_data.profile "workspace" -}}
+# Make zsh the login shell in cloud workspaces so `coder ssh` and herdr land in
+# the environment chezmoi just applied (.zshrc + .zsh/). Only touches
+# workspaces: on a physical machine the login shell is the user's own business.
+#
+# If zsh ever breaks and locks you out of an interactive shell, bypass the
+# login shell entirely:  coder ssh <workspace> -- bash
+set -euo pipefail
+
+ZSH_PATH=$(command -v zsh || true)
+if [ -z "$ZSH_PATH" ]; then
+  echo "  zsh not installed — leaving login shell as-is"
+  exit 0
+fi
+
+CURRENT=$(getent passwd "$USER" | cut -d: -f7)
+if [ "$CURRENT" = "$ZSH_PATH" ]; then
+  echo "  login shell is already $ZSH_PATH"
+  exit 0
+fi
+
+# chsh refuses a shell that isn't in /etc/shells.
+if ! grep -qxF "$ZSH_PATH" /etc/shells 2>/dev/null; then
+  echo "$ZSH_PATH" | sudo tee -a /etc/shells > /dev/null
+fi
+
+sudo chsh -s "$ZSH_PATH" "$USER"
+echo "  login shell changed: $CURRENT -> $ZSH_PATH"
+{{- else -}}
+echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — not a cloud workspace"
+{{- end }}

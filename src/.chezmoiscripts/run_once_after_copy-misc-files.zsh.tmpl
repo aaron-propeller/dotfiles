@@ -1,13 +1,15 @@
-#! /bin/zsh
-{{- if ne .user_data.profile "workspace" -}}
+#!/usr/bin/env bash
+{{ if ne .user_data.profile "workspace" -}}
 
 echo "Copying fonts..."
 # Copy any fonts to the font book
+mkdir -p {{ .chezmoi.homeDir }}/Library/Fonts
 cp -r {{ .chezmoi.workingTree }}/fonts/* {{ .chezmoi.homeDir }}/Library/Fonts
 
 echo "Linking wallpapers..."
-# Link wallpapers to the Pcitures folder
-ln -s {{ .chezmoi.workingTree }}/wallpapers {{ .chezmoi.homeDir }}/Pictures/wallpapers
+# Link wallpapers to the Pictures folder. -sfn so a re-run repoints the symlink
+# instead of failing, or nesting a link inside the existing directory.
+ln -sfn {{ .chezmoi.workingTree }}/wallpapers {{ .chezmoi.homeDir }}/Pictures/wallpapers
 {{- else -}}
 echo "[chezmoi] skipping {{ base .chezmoi.sourceFile }} — this is a cloud workspace"
 {{- end }}
