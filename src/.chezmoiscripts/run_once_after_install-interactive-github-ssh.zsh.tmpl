@@ -1,5 +1,5 @@
-#! /bin/zsh
-{{- if ne .user_data.profile "workspace" -}}
+#!/usr/bin/env bash
+{{ if ne .user_data.profile "workspace" -}}
 {{- /*
 Interactive: generate a new ed25519 SSH key, wait while the user uploads the
 public half to GitHub, verify.

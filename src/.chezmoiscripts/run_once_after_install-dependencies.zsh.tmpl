@@ -1,5 +1,5 @@
-#! /bin/zsh
-{{- if ne .user_data.profile "workspace" -}}
+#!/usr/bin/env bash
+{{ if ne .user_data.profile "workspace" -}}
 
 # Arch guard: on Apple Silicon, refuse to run under Rosetta 2. Homebrew's
 # arm64 prefix (/opt/homebrew) rejects x86_64 cask installs with
